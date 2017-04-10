@@ -1,19 +1,41 @@
 import './App.css'
 
 import React from 'react'
+import * as firebase from 'firebase'
 
-let App = React.createClass({
-  render() {
-    return <div className="App">
-      <div className="App-heading App-flex">
-        <h2>Welcome to <span className="App-react">React</span></h2>
-      </div>
-      <div className="App-instructions App-flex">
-        <img className="App-logo" src={require('./react.svg')}/>
-        <p>Edit <code>src/App.js</code> and save to hot reload your changes.</p>
-      </div>
-    </div>
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      speed: 1
+    }
   }
-})
+
+  componentDidMount() {
+    const rootRef = firebase.database().ref().child('react')
+    const speedRef = rootRef.child('speed')
+    speedRef.on('value', snap => {
+        this.setState({
+          speed:snap.val()
+        })
+    })
+  }
+
+  handleClick = () => {
+    this.setState({
+      speed: this.state.speed + 1
+    })
+  }
+
+  render () {
+    return(
+      <div>
+        <h1>React Firebase App</h1>
+        <button onClick={this.handleClick}>Apasa</button>
+        <p>Counter Value: {this.state.speed}</p>
+      </div>
+    )
+  }
+}
 
 export default App
