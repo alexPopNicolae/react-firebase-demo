@@ -12,6 +12,7 @@
     "test:watch": "nwb test --server"
   },
   "dependencies": {
+    "firebase": "^3.7.5",
     "react": "^15.5.3",
     "react-dom": "^15.5.3"
   },
