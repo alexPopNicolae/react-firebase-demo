@@ -37,16 +37,20 @@ class App extends React.Component {
     messRef.push().set({
       message:this.state.textareaMessage
     })
+
+    let filteredMessages = this.state.filteredMessages
+    filteredMessages.push(this.state.textareaMessage)
   
    this.setState({
-     textareaMessage:''
+     textareaMessage:'',
+     filteredMessages:filteredMessages
    })
   }
 
   loadAndDisplayMessages = () => {
     let radRef = firebase.database().ref().child('react')
     let messagesRef = radRef.child('messages')
-    messagesRef.once('value', dataSnapshot => {
+    messagesRef.on('value', dataSnapshot => {
       let messagesVal = dataSnapshot.val()
        let mess = []
       for (let prop in messagesVal) {
