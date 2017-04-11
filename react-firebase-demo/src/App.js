@@ -2,6 +2,7 @@ import './App.css'
 
 import React from 'react'
 import * as firebase from 'firebase'
+import _ from 'lodash'
 
 class App extends React.Component {
   constructor(props) {
@@ -9,13 +10,54 @@ class App extends React.Component {
     this.state = {
       speed: 0,
       email:'',
-      password:''
+      password:'',
+      messages:[],
+      textareaMessage:'',
+      filteredMessages:[]
     }
+  }
+
+
+  handleTextArea = (e) => {
+    this.setState({
+      textareaMessage:e.target.value
+    })
   }
 
   componentDidMount() {
     this.loadDataBaseListener()
     this.realTimeUserListener()
+    this.loadAndDisplayMessages()
+  }
+
+  saveMessageToDb = () => {
+    let fireRef = firebase.database().ref().child('react')
+    let messRef = fireRef.child('messages')
+
+    messRef.push().set({
+      message:this.state.textareaMessage
+    })
+  
+   this.setState({
+     textareaMessage:''
+   })
+  }
+
+  loadAndDisplayMessages = () => {
+    let radRef = firebase.database().ref().child('react')
+    let messagesRef = radRef.child('messages')
+    messagesRef.once('value', dataSnapshot => {
+      let messagesVal = dataSnapshot.val()
+       let mess = []
+      for (let prop in messagesVal) {
+          let item = messagesVal[prop]
+          mess.push(item.message)
+      }
+       this.setState({
+         filteredMessages:mess
+      })
+
+    })
   }
 
   loadDataBaseListener = () => {
@@ -32,7 +74,6 @@ class App extends React.Component {
     firebase.auth().onAuthStateChanged(firebaseUser => {
       if(firebaseUser) {
         console.log('you are now loggend in')
-        console.log(firebaseUser)
       } else {
         console.log('you are not loggen in')
       }
@@ -77,16 +118,34 @@ class App extends React.Component {
   render () {
     return(
       <div>
+        
         <h1>React Firebase App</h1>
-        <button onClick={this.logIn}>Log In</button>
-        <button onClick={this.signUp}>Sign Up</button>
-        <button onClick={this.logOut}>Log out</button>
-        <p>Counter Value: {this.state.speed}</p>
-        <div className="login_area">
+         <div className="login_area">
+        <div className="buttons">
+          <button onClick={this.logIn}>Log In</button>
+          <button onClick={this.signUp}>Sign Up</button>
+          <button onClick={this.logOut}>Log out</button>
+        </div>
+        <p>Speed Value: {this.state.speed}</p>
           <label htmlFor="email">Email:</label>
           <input id="email" type="text" onChange={this.handleInputChange} />
           <label htmlFor="password">Password:</label>
           <input id="password" type="password" onChange={this.handleInputChange} />
+        </div>
+        <h1>Mesajele din baza de date sunt:</h1>
+        <div className="messages">
+           {
+             
+             this.state.filteredMessages.map((item, index)=>{
+               return <p className="message">{item}</p>
+             })
+            
+           }
+        </div>
+        <h1>Add a new message to database</h1>
+        <div className="add_message">
+          <textarea value={this.state.textareaMessage} onChange={this.handleTextArea}/>
+          <button onClick={this.saveMessageToDb}>Add Message to DB</button>
         </div>
       </div>
     )
